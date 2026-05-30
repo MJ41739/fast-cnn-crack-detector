@@ -41,3 +41,24 @@ def test_predict_invalid_mime_type():
     )
     assert response.status_code == 400
     assert "Invalid MIME type" in response.json()["detail"]
+
+def test_predict_valid_image():
+    from io import BytesIO
+    from PIL import Image
+    
+    # Create a dummy 100x100 white JPEG image in memory
+    img = Image.new("RGB", (100, 100), color="white")
+    img_byte_arr = BytesIO()
+    img.save(img_byte_arr, format='JPEG')
+    img_bytes = img_byte_arr.getvalue()
+    
+    response = client.post(
+        "/predict?heatmap=false",
+        files={"file": ("test.jpg", img_bytes, "image/jpeg")}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "prediction" in data
+    assert "confidence" in data
+    assert "probability" in data
+    assert "inference_time_ms" in data

@@ -120,9 +120,9 @@ async def predict_image(
         )
 
     # Check file size (Max 5MB)
-    await file.seek(0, os.SEEK_END)
-    file_size = await file.tell()
-    await file.seek(0)  # Reset seek pointer
+    file.file.seek(0, os.SEEK_END)
+    file_size = file.file.tell()
+    file.file.seek(0)  # Reset seek pointer
 
     MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
     if file_size > MAX_FILE_SIZE:
@@ -166,9 +166,9 @@ async def predict_batch_images(
         if ext in [".jpg", ".jpeg", ".png", ".bmp"]:
             if file.content_type in ["image/jpeg", "image/png", "image/bmp"]:
                 # Check file size (Max 5MB)
-                await file.seek(0, os.SEEK_END)
-                file_size = await file.tell()
-                await file.seek(0)
+                file.file.seek(0, os.SEEK_END)
+                file_size = file.file.tell()
+                file.file.seek(0)
                 
                 if file_size <= 5 * 1024 * 1024:
                     try:
