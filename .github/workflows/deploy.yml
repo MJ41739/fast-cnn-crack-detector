@@ -62,49 +62,40 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+
+      - name: Filter and Prepare Hugging Face Assets
+        run: |
+          mkdir -p dist_hf/checkpoints
+          cp -r backend dist_hf/
+          cp -r models dist_hf/
+          cp -r utils dist_hf/
+          cp Dockerfile dist_hf/
+          cp requirements.txt dist_hf/
+          
+          # Copy only the small, optimized weights required for inference
+          if [ -f checkpoints/custom_cnn_quantized.onnx ]; then
+            cp checkpoints/custom_cnn_quantized.onnx dist_hf/checkpoints/
+          fi
+          if [ -f checkpoints/custom_cnn.onnx ]; then
+            cp checkpoints/custom_cnn.onnx dist_hf/checkpoints/
+          fi
+          if [ -f checkpoints/custom_cnn_best.pth ]; then
+            cp checkpoints/custom_cnn_best.pth dist_hf/checkpoints/
+          fi
 
       - name: Push to Hugging Face Spaces
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_SPACE_PATH: ${{ secrets.HF_SPACE_PATH }} # e.g. "username/space-name"
         run: |
+          cd dist_hf
+          git init
+          git checkout -b main
           git config --global user.email "deploy@github-actions.com"
           git config --global user.name "CI-CD Bot"
+          git add -A
+          git commit -m "deploy: update spaces container"
           
-          # Force push code to Hugging Face Git repository which triggers automatic Docker rebuild
+          # Force push to the Space repository
           git remote add hf https://deploy-bot:$HF_TOKEN@huggingface.co/spaces/$HF_SPACE_PATH
-          git push --force hf HEAD:refs/heads/main
-
-  deploy-frontend:
-    needs: test-and-lint
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Pull Vercel Environment Information
-        working-directory: ./frontend
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Build Project Artifacts
-        working-directory: ./frontend
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Deploy Project Artifacts to Vercel
-        working-directory: ./frontend
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          git push --force hf main
