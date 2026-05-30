@@ -90,12 +90,19 @@ jobs:
         run: |
           cd dist_hf
           git init
+          
+          # Initialize Git LFS and track binary files
+          git lfs install
+          git lfs track "*.onnx"
+          git lfs track "*.pth"
+          git add .gitattributes
+          
           git checkout -b main
           git config --global user.email "deploy@github-actions.com"
           git config --global user.name "CI-CD Bot"
           git add -A
-          git commit -m "deploy: update spaces container"
+          git commit -m "deploy: update spaces container with Git LFS"
           
-          # Force push to the Space repository
+          # Force push to the Space repository (Git LFS will upload the binary files)
           git remote add hf https://deploy-bot:$HF_TOKEN@huggingface.co/spaces/$HF_SPACE_PATH
           git push --force hf main
