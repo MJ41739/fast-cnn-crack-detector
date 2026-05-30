@@ -97,7 +97,7 @@ def get_model_info():
     }
 
 @app.post("/predict", response_model=PredictionResponse, tags=["Inference"])
-@limiter.limit("30/minute")
+@limiter.limit("100/minute")
 async def predict_image(
     request: Request,
     file: UploadFile = File(...),
