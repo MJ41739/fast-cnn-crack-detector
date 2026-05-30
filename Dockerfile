@@ -25,12 +25,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy installed Python packages from builder
-COPY --from=builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
-
 # Create a non-root user (UID 1000) for Hugging Face Spaces sandbox compatibility
 RUN useradd -m -u 1000 user
+
+# Copy installed Python packages from builder to user's home directory with correct ownership
+COPY --from=builder --chown=user:user /root/.local /home/user/.local
+
 USER user
 ENV HOME=/home/user
 ENV PATH=/home/user/.local/bin:$PATH
