@@ -1,0 +1,31 @@
+# Crack Detection System Checklist
+
+- `[ ]` Define Configuration module (`backend/config.py` and requirements)
+- `[ ]` Implement Dataset Class & Preprocessing (`training/dataset.py`)
+- `[ ]` Create CNN Architectures (`models/`)
+  - `[ ]` Custom Fast CNN (`models/custom_cnn.py`)
+  - `[ ]` MobileNetV2 (`models/mobilenet_v2.py`)
+  - `[ ]` EfficientNetB0 (`models/efficientnet.py`)
+  - `[ ]` Model Factory (`models/factory.py`)
+- `[ ]` Implement Training Pipeline (`training/train.py`)
+- `[ ]` Implement Evaluation & Visualization (`training/evaluate.py`, `utils/visualizer.py`)
+- `[ ]` Implement Grad-CAM (`utils/gradcam.py`)
+- `[ ]` Implement Model Optimization & Edge Export (`training/export.py`)
+  - `[ ]` ONNX export
+  - `[ ]` INT8 static/dynamic Quantization
+  - `[ ]` Pruning support
+  - `[ ]` TFLite conversion support
+- `[ ]` Create FastAPI Backend (`backend/main.py`)
+  - `[ ]` `/health` check with GPU status
+  - `[ ]` `/predict` with Grad-CAM heatmap response
+  - `[ ]` `/predict-batch` for batch uploading
+  - `[ ]` `/change-model` for hot-swapping models
+- `[ ]` Build React+Vite Frontend Dashboard (`frontend/`)
+  - `[ ]` Setup Tailwind CSS layout & styling
+  - `[ ]` Single prediction with Grad-CAM visualization
+  - `[ ]` Batch prediction tab with status grids
+  - `[ ]` Live Webcam tab with bounding overlay & real-time FPS
+  - `[ ]` Model comparison tab
+- `[ ]` Add Docker Configuration (`docker/` & `docker-compose.yml`)
+- `[ ]` Add verification tests (`verify_pipeline.py`)
+- `[ ]` Create detailed README.md documentation

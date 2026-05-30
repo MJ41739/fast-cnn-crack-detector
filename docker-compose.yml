@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: crack_detection_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./checkpoints:/app/checkpoints
+      - ./outputs:/app/outputs
+    environment:
+      - APP_NAME=Crack Detection System
+      - DEBUG=False
+      - DEVICE=cpu # Use CPU in basic docker, can be changed to support nvidia runtime if docker-gpu is set up
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: crack_detection_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=/api # Routes calls to Nginx reverse proxy
+    restart: unless-stopped
