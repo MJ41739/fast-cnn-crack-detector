@@ -71,6 +71,7 @@ jobs:
           cp -r utils dist_hf/
           cp Dockerfile dist_hf/
           cp requirements.txt dist_hf/
+          cp README_HF.md dist_hf/README.md
           
           # Copy only the small, optimized weights required for inference
           if [ -f checkpoints/custom_cnn_quantized.onnx ]; then
