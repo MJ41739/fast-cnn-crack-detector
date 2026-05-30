@@ -40,26 +40,48 @@ export default function BatchUpload() {
     setError(null);
     setProgress(10);
 
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append("files", file);
-    });
+    const CHUNK_SIZE = 10;
+    const totalFiles = files.length;
+    const chunks = [];
+    for (let i = 0; i < totalFiles; i += CHUNK_SIZE) {
+      chunks.push(files.slice(i, i + CHUNK_SIZE));
+    }
+
+    const allPredictions = [];
+    let totalLatencySum = 0;
+    let successfulImagesCount = 0;
 
     try {
-      setProgress(40);
-      const response = await fetch(`${API_URL}/predict-batch`, {
-        method: "POST",
-        body: formData,
-      });
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        const formData = new FormData();
+        chunk.forEach((file) => {
+          formData.append("files", file);
+        });
 
-      setProgress(80);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const response = await fetch(`${API_URL}/predict-batch`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        allPredictions.push(...data.predictions);
+        totalLatencySum += data.average_latency_ms * data.total_images;
+        successfulImagesCount += data.total_images;
+
+        const percentComplete = Math.round(10 + ((i + 1) / chunks.length) * 90);
+        setProgress(percentComplete);
       }
 
-      const data = await response.json();
-      setResults(data);
-      setProgress(100);
+      setResults({
+        total_images: successfulImagesCount,
+        predictions: allPredictions,
+        average_latency_ms: successfulImagesCount > 0 ? (totalLatencySum / successfulImagesCount) : 0
+      });
     } catch (err) {
       console.error(err);
       setError("Failed to run batch predictions. Verify backend server connectivity.");
