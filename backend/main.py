@@ -147,7 +147,7 @@ async def predict_image(
 
 @app.post("/predict-batch", response_model=BatchPredictionResponse, tags=["Inference"])
 @app.post("/batch-predict", response_model=BatchPredictionResponse, tags=["Inference"])
-@limiter.limit("10/minute")
+@limiter.limit("100/minute")
 async def predict_batch_images(
     request: Request,
     files: List[UploadFile] = File(...)
