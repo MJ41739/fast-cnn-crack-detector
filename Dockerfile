@@ -31,15 +31,18 @@ RUN useradd -m -u 1000 user
 # Copy installed Python packages from builder to user's home directory with correct ownership
 COPY --from=builder --chown=user:user /root/.local /home/user/.local
 
-USER user
-ENV HOME=/home/user
-ENV PATH=/home/user/.local/bin:$PATH
-
 # Copy backend codebase and weights into container with correct user permissions
 COPY --chown=user:user backend/ /app/backend/
 COPY --chown=user:user models/ /app/models/
 COPY --chown=user:user utils/ /app/utils/
 COPY --chown=user:user checkpoints/ /app/checkpoints/
+
+# Grant write access to /app for the non-root user
+RUN chown -R user:user /app
+
+USER user
+ENV HOME=/home/user
+ENV PATH=/home/user/.local/bin:$PATH
 
 # Default MLOps environment configurations
 ENV DEVICE=cpu
