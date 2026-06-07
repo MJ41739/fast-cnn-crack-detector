@@ -42,11 +42,10 @@ export default function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                  isActive
-                    ? 'bg-sky-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
-                }`}
+                className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${isActive
+                  ? 'bg-sky-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 {tab.name}
@@ -71,10 +70,11 @@ export default function App() {
 
       {/* Footer Metrics */}
       <footer className="text-center py-4 text-[10px] text-slate-600 font-semibold tracking-wider uppercase flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-slate-900/50 pt-6">
-        <span>© 2026 INDUSTRIAL DEFECT SYSTEMS INC.</span>
-        <span>
-          MLOps Architect: PyTorch CUDA AMP & ONNX Runtime Edge optimized
-        </span>
+        <span>Industrial Infrastructure Monitoring System</span>
+        {/* <span>© 2026 INDUSTRIAL DEFECT SYSTEMS INC.</span> */}
+        {/* <span> */}
+        {/* MLOps Architect: PyTorch CUDA AMP & ONNX Runtime Edge optimized */}
+        {/* </span> */}
       </footer>
     </div>
   );
