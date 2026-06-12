@@ -1,6 +1,6 @@
 {
-    "best_model": "mobilenet_v2",
-    "accuracy": 0.9813333333333333,
-    "f1_score": 0.9809976247030879,
-    "latency_ms": 0.5973596575363734
+    "best_model": "custom_cnn",
+    "accuracy": 0.994,
+    "f1_score": 0.9940159574468085,
+    "latency_ms": 0.24731153592817484
 }
