@@ -157,7 +157,7 @@ def plot_roc_curve(fpr: np.ndarray, tpr: np.ndarray, auc: float, model_name: str
 
 def compare_all_models():
     """Evaluate and compare all trained models, and save a comparison report."""
-    models_to_evaluate = ["custom_cnn", "mobilenet_v2", "efficientnet"]
+    models_to_evaluate = ["custom_cnn", "mobilenet_v2", "efficientnet", "rcnn"]
     results = {}
     
     for name in models_to_evaluate:
@@ -233,7 +233,7 @@ if __name__ == "__main__":
         "--model", 
         type=str, 
         default="compare", 
-        choices=["custom_cnn", "mobilenet_v2", "efficientnet", "compare"],
+        choices=["custom_cnn", "mobilenet_v2", "efficientnet", "rcnn", "compare"],
         help="Model to evaluate (or 'compare' to evaluate and compare all trained models)"
     )
     args = parser.parse_args()

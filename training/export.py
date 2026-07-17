@@ -125,7 +125,7 @@ if __name__ == "__main__":
         "--model", 
         type=str, 
         default="custom_cnn", 
-        choices=["custom_cnn", "mobilenet_v2", "efficientnet"],
+        choices=["custom_cnn", "mobilenet_v2", "efficientnet", "rcnn"],
         help="Model to optimize and export"
     )
     parser.add_argument("--prune", type=float, default=0.3, help="Amount of weights to prune (0.0 to 1.0)")

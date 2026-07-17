@@ -2,5 +2,5 @@
     "best_model": "custom_cnn",
     "accuracy": 0.994,
     "f1_score": 0.9940159574468085,
-    "latency_ms": 0.24731153592817484
+    "latency_ms": 0.23153075106049384
 }

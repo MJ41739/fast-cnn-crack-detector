@@ -46,7 +46,7 @@ def verify_gpu_and_environment():
 def verify_model_factory():
     """Instantiate and run a dry-run inference on all models using dummy inputs."""
     logger.info("\n=== STEP 2: Model Architecture Verification ===")
-    models = ["custom_cnn", "mobilenet_v2", "efficientnet"]
+    models = ["custom_cnn", "mobilenet_v2", "efficientnet", "rcnn"]
     device = torch.device(settings.DEVICE)
     
     dummy_input = torch.randn(2, 3, 224, 224).to(device)

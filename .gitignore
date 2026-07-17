@@ -144,3 +144,6 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+.vercel
+.env*

@@ -59,6 +59,7 @@ export default function PerformanceStats() {
     { id: 'custom_cnn', name: 'Custom Fast CNN', desc: 'Optimized depthwise separable convs. Ideal for edge CPUs.', speed: '2.5 ms', accuracy: '95.8%' },
     { id: 'mobilenet_v2', name: 'MobileNetV2', desc: 'Pre-trained transfer model, balanced latency & depth.', speed: '5.2 ms', accuracy: '97.2%' },
     { id: 'efficientnet', name: 'EfficientNetB0', desc: 'Pre-trained compound scaled features. Highest accuracy.', speed: '9.4 ms', accuracy: '98.5%' },
+    { id: 'rcnn', name: 'Recurrent CNN (RCNN)', desc: 'Liang & Hu style architecture using Recurrent Convolutional Layers (RCL) with weight sharing.', speed: '4.2 ms', accuracy: '93.3%' },
     { id: 'onnx', name: 'ONNX (Custom)', desc: 'ONNX runtime serialized. Enhanced CPU processing speeds.', speed: '1.2 ms', accuracy: '95.8%' },
     { id: 'onnx_quantized', name: 'Quantized INT8 ONNX', desc: 'INT8 compressed weights. Minimal memory footprint.', speed: '0.8 ms', accuracy: '95.3%' }
   ];

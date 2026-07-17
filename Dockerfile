@@ -36,6 +36,7 @@ COPY --chown=user:user backend/ /app/backend/
 COPY --chown=user:user models/ /app/models/
 COPY --chown=user:user utils/ /app/utils/
 COPY --chown=user:user checkpoints/ /app/checkpoints/
+COPY --chown=user:user frontend/dis[t] /app/frontend/dist/
 
 # Grant write access to /app for the non-root user
 RUN chown -R user:user /app

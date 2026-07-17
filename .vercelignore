@@ -1,0 +1,23 @@
+# Exclude dataset and backend code from Vercel uploads
+kaggle_dataset/
+outputs/
+checkpoints/
+training/
+tests/
+backend/
+models/
+utils/
+dist_hf/
+.git/
+.pytest_cache/
+node_modules/
+*.onnx
+*.pth
+*.tar.gz
+*.zip
+deploy_hf.py
+verify_pipeline.py
+Production_deployment_guide.md
+debugging_report.md
+production_deployment_implementation_plan.md
+prod_deployment_task.md

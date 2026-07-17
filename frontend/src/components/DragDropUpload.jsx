@@ -71,14 +71,23 @@ export default function DragDropUpload() {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        let errorMsg = `HTTP error! status: ${response.status}`;
+        try {
+          const errData = await response.json();
+          if (errData && errData.detail) {
+            errorMsg = errData.detail;
+          }
+        } catch (e) {
+          // Response is not JSON
+        }
+        throw new Error(errorMsg);
       }
       
       const data = await response.json();
       setResult(data);
     } catch (err) {
       console.error(err);
-      setError("Failed to run prediction. Verify that the backend server is running on port 8000.");
+      setError(err.message || "Failed to run prediction. Verify that the backend server is running on port 8000.");
     } finally {
       setLoading(false);
     }
@@ -129,7 +138,7 @@ export default function DragDropUpload() {
                 <Upload className="w-8 h-8 text-sky-400 animate-pulse" />
               </div>
               <p className="font-medium text-slate-200">Drag and drop file here</p>
-              <p className="text-xs text-slate-500 mt-2">Supports JPG, JPEG, PNG, BMP up to 10MB</p>
+              <p className="text-xs text-slate-500 mt-2">Supports JPG, JPEG, PNG, BMP up to 25MB</p>
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center gap-4">

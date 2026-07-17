@@ -3,8 +3,10 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import multiprocessing
-from fastapi import FastAPI, File, UploadFile, Query, HTTPException, status, Request
+from fastapi import FastAPI, APIRouter, File, UploadFile, Query, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from typing import List
 
 # Setup slowapi for rate limiting
@@ -37,6 +39,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Initialize API Router
+api_router = APIRouter()
+
 # Attach limiter to app state
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -50,7 +55,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/health", response_model=HealthResponse, tags=["Diagnostics"])
+@api_router.get("/health", response_model=HealthResponse, tags=["Diagnostics"])
 def health_check():
     """Gathers system health and hardware diagnostics details."""
     cpu_cores = os.cpu_count() or 0
@@ -80,7 +85,7 @@ def health_check():
         memory_usage_percent=mem_usage
     )
 
-@app.get("/model-info", tags=["Diagnostics"])
+@api_router.get("/model-info", tags=["Diagnostics"])
 def get_model_info():
     """Returns details about the active deep learning model and hardware configuration."""
     is_onnx = inference_service.onnx_session is not None
@@ -96,7 +101,7 @@ def get_model_info():
         "precision": "int8" if "quantized" in inference_service.active_model_name else "float32"
     }
 
-@app.post("/predict", response_model=PredictionResponse, tags=["Inference"])
+@api_router.post("/predict", response_model=PredictionResponse, tags=["Inference"])
 @limiter.limit("100/minute")
 async def predict_image(
     request: Request,
@@ -119,16 +124,16 @@ async def predict_image(
             detail=f"Invalid MIME type '{file.content_type}'. Must be image/jpeg, image/png, or image/bmp."
         )
 
-    # Check file size (Max 5MB)
+    # Check file size (Max 25MB)
     file.file.seek(0, os.SEEK_END)
     file_size = file.file.tell()
     file.file.seek(0)  # Reset seek pointer
 
-    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+    MAX_FILE_SIZE = 25 * 1024 * 1024  # 25MB
     if file_size > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File size exceeds the 5MB limit. Uploaded file is {file_size / (1024 * 1024):.2f}MB."
+            detail=f"File size exceeds the 25MB limit. Uploaded file is {file_size / (1024 * 1024):.2f}MB."
         )
         
     try:
@@ -145,8 +150,8 @@ async def predict_image(
             detail=f"Inference error: {str(e)}"
         )
 
-@app.post("/predict-batch", response_model=BatchPredictionResponse, tags=["Inference"])
-@app.post("/batch-predict", response_model=BatchPredictionResponse, tags=["Inference"])
+@api_router.post("/predict-batch", response_model=BatchPredictionResponse, tags=["Inference"])
+@api_router.post("/batch-predict", response_model=BatchPredictionResponse, tags=["Inference"])
 @limiter.limit("100/minute")
 async def predict_batch_images(
     request: Request,
@@ -165,12 +170,12 @@ async def predict_batch_images(
         ext = os.path.splitext(file.filename)[1].lower()
         if ext in [".jpg", ".jpeg", ".png", ".bmp"]:
             if file.content_type in ["image/jpeg", "image/png", "image/bmp"]:
-                # Check file size (Max 5MB)
+                # Check file size (Max 25MB)
                 file.file.seek(0, os.SEEK_END)
                 file_size = file.file.tell()
                 file.file.seek(0)
                 
-                if file_size <= 5 * 1024 * 1024:
+                if file_size <= 25 * 1024 * 1024:
                     try:
                         contents = await file.read()
                         images_list.append((contents, file.filename))
@@ -182,7 +187,7 @@ async def predict_batch_images(
     if not images_list:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No valid image files found in upload list. Allowed: .jpg, .jpeg, .png, .bmp under 5MB each."
+            detail="No valid image files found in upload list. Allowed: .jpg, .jpeg, .png, .bmp under 25MB each."
         )
         
     try:
@@ -196,7 +201,7 @@ async def predict_batch_images(
             detail=f"Batch inference failed: {str(e)}"
         )
 
-@app.post("/change-model", response_model=ChangeModelResponse, tags=["Diagnostics"])
+@api_router.post("/change-model", response_model=ChangeModelResponse, tags=["Diagnostics"])
 def change_inference_model(payload: ChangeModelRequest):
     """Hot-swap the active deep learning model in production (supports PyTorch & ONNX models)."""
     try:
@@ -211,6 +216,20 @@ def change_inference_model(payload: ChangeModelRequest):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to load model '{payload.model_name}': {str(e)}"
         )
+# Include the API router with and without the /api prefix
+app.include_router(api_router, prefix="/api")
+app.include_router(api_router)
+
+# Serve static files from frontend/dist if the directory exists
+frontend_dist_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist")
+if os.path.exists(frontend_dist_path):
+    app.mount("/", StaticFiles(directory=frontend_dist_path, html=True), name="frontend")
+else:
+    @app.get("/", tags=["General"])
+    def root_message():
+        return {
+            "message": "Concrete Crack Detection API is running. Visit /docs for API documentation, or build the frontend to view the UI."
+        }
 
 if __name__ == "__main__":
     import uvicorn

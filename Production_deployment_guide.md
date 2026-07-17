@@ -107,12 +107,27 @@ git push -u origin main
 7. Click **Create Space**.
 8. Go to your Hugging Face Profile -> **Settings** -> **Access Tokens** -> Click **New Token** and create a **Write** token. Copy this token.
 
-### Step 4.4: Setup GitHub Actions CI/CD Secrets
+### Step 4.4: Setup GitHub Actions CI/CD Secrets (Optional)
+If your GitHub account is fully active, you can use automated CI/CD:
 In your GitHub repository, go to **Settings** -> **Secrets and variables** -> **Actions** -> click **New repository secret**:
 *   `HF_TOKEN`: Paste the Hugging Face Write Token.
 *   `HF_SPACE_PATH`: Enter your Space path (e.g., `your-username/crack-detection-api`).
 
-Once pushed, GitHub Actions will trigger, run the linter and pytest tests, and push the repository to Hugging Face, which will build and start your API automatically.
+Once pushed, GitHub Actions will trigger, run tests, and deploy automatically.
+
+### Step 4.4b: Direct Local Deploy to Hugging Face (Alternative / Bypass GitHub)
+If your GitHub account is flagged or you cannot push code, you can bypass GitHub entirely and push the built application directly to Hugging Face Spaces from your local terminal:
+
+1. Run the local deployment script:
+   ```bash
+   python deploy_hf.py
+   ```
+2. The script will:
+   - Ask for your Hugging Face username, Space name, and Write access token.
+   - Build the frontend locally (`npm run build`).
+   - Package all required files (backend code, weights, frontend build) into a temporary `dist_hf` directory.
+   - Force-push this bundle directly to your Hugging Face Space repository using git/git-lfs.
+3. Hugging Face Spaces will automatically detect the push, build the container, and serve your app.
 
 ### Step 4.5: Deploy Frontend to Vercel
 1. Sign in to [Vercel](https://vercel.com/).

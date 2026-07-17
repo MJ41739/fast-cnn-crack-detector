@@ -65,7 +65,16 @@ export default function BatchUpload() {
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          let errorMsg = `HTTP error! status: ${response.status}`;
+          try {
+            const errData = await response.json();
+            if (errData && errData.detail) {
+              errorMsg = errData.detail;
+            }
+          } catch (e) {
+            // Response is not JSON
+          }
+          throw new Error(errorMsg);
         }
 
         const data = await response.json();
@@ -84,7 +93,7 @@ export default function BatchUpload() {
       });
     } catch (err) {
       console.error(err);
-      setError("Failed to run batch predictions. Verify backend server connectivity.");
+      setError(err.message || "Failed to run batch predictions. Verify backend server connectivity.");
     } finally {
       setLoading(false);
     }

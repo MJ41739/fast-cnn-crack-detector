@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     CHECKPOINT_DIR: str = str(BASE_DIR / "checkpoints")
     OUTPUT_DIR: str = str(BASE_DIR / "outputs")
     
-    # Active Model in production API (can be 'custom_cnn', 'mobilenet_v2', 'efficientnet', etc.)
+    # Active Model in production API (can be 'custom_cnn', 'mobilenet_v2', 'efficientnet', 'rcnn', etc.)
     ACTIVE_MODEL_NAME: str = "custom_cnn"
     
     # Device setup: automatically default to cuda if available

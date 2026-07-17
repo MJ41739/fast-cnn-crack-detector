@@ -16,6 +16,12 @@ def test_health_endpoint():
     assert "active_model" in data
     assert "device" in data
 
+def test_api_health_endpoint():
+    response = client.get("/api/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "Healthy"
+
 def test_model_info_endpoint():
     response = client.get("/model-info")
     assert response.status_code == 200
@@ -23,6 +29,12 @@ def test_model_info_endpoint():
     assert "active_model" in data
     assert "model_type" in data
     assert "onnx_optimized" in data
+
+def test_api_model_info_endpoint():
+    response = client.get("/api/model-info")
+    assert response.status_code == 200
+    data = response.json()
+    assert "active_model" in data
 
 def test_predict_invalid_file_type():
     # Attempt to upload an invalid file extension (text file)

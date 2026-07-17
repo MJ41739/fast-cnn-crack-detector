@@ -293,7 +293,7 @@ if __name__ == "__main__":
         "--model", 
         type=str, 
         default="custom_cnn", 
-        choices=["custom_cnn", "mobilenet_v2", "efficientnet", "all"],
+        choices=["custom_cnn", "mobilenet_v2", "efficientnet", "rcnn", "all"],
         help="Model to train (or 'all' to train and compare all models)"
     )
     parser.add_argument("--epochs", type=int, default=None, help="Number of training epochs")
@@ -309,7 +309,7 @@ if __name__ == "__main__":
         
     if args.model == "all":
         results = {}
-        for m_name in ["custom_cnn", "mobilenet_v2", "efficientnet"]:
+        for m_name in ["custom_cnn", "mobilenet_v2", "efficientnet", "rcnn"]:
             print("="*60)
             print(f"TRAINING {m_name.upper()}")
             print("="*60)
