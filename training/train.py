@@ -18,7 +18,11 @@ from models.factory import get_model
 from utils.visualizer import plot_training_history
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, 
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
 logger = logging.getLogger(__name__)
 
 class EarlyStopping:
@@ -65,7 +69,7 @@ def train_epoch(
         optimizer.zero_grad()
         
         # Mixed Precision context
-        with autocast(enabled=(device.type == "cuda")):
+        with torch.amp.autocast("cuda", enabled=(device.type == "cuda")):
             outputs = model(inputs)
             loss = criterion(outputs, labels)
         
@@ -107,7 +111,7 @@ def validate_epoch(
     for inputs, labels in dataloader:
         inputs, labels = inputs.to(device), labels.to(device).unsqueeze(1)
         
-        with autocast(enabled=(device.type == "cuda")):
+        with torch.amp.autocast("cuda", enabled=(device.type == "cuda")):
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             
@@ -168,7 +172,7 @@ def train_model(
     
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=2)
     early_stopping = EarlyStopping(patience=5, verbose=True)
-    scaler = GradScaler(enabled=(device.type == "cuda"))
+    scaler = torch.amp.GradScaler("cuda", enabled=(device.type == "cuda"))
     
     start_epoch = 0
     history = {"train_loss": [], "val_loss": [], "train_acc": [], "val_acc": []}

@@ -23,7 +23,11 @@ from training.dataset import get_dataloaders
 from models.factory import get_model
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, 
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
 logger = logging.getLogger(__name__)
 
 @torch.no_grad()
@@ -33,13 +37,12 @@ def evaluate_model(
 ) -> Dict[str, Any]:
     """Evaluate a trained model checkpoint on the test partition."""
     device = torch.device(settings.DEVICE)
-    logger.info(f"Evaluating model: {model_name} on {device}")
+    print(f"Evaluating model: {model_name} on {device}", flush=True)
     
     # Load dataset dataloaders
     _, _, test_loader = get_dataloaders()
     
     # Instantiate model and load best weights
-    # Since we are evaluating the final model, freeze_backbone doesn't matter (we set to False to load all weights)
     model = get_model(model_name, pretrained=False, num_classes=1, freeze_backbone=False)
     
     if model_path is None:
@@ -55,19 +58,16 @@ def evaluate_model(
     all_preds = []
     all_probs = []
     all_targets = []
-    
-    # Measure latency
     latencies = []
     
-    for inputs, labels in test_loader:
+    total_batches = len(test_loader)
+    for b_idx, (inputs, labels) in enumerate(test_loader, 1):
         inputs = inputs.to(device)
         
-        # Warmup and time single image inference if batch_size=1 or compute average batch latency
         start_time = time.perf_counter()
         outputs = model(inputs)
         batch_latency = (time.perf_counter() - start_time) * 1000.0  # in ms
         
-        # Approximate per-image latency
         latencies.append(batch_latency / inputs.size(0))
         
         probs = torch.sigmoid(outputs).cpu().numpy().flatten()
@@ -76,6 +76,9 @@ def evaluate_model(
         all_probs.extend(probs)
         all_preds.extend(preds)
         all_targets.extend(labels.numpy().flatten())
+
+        if b_idx % 50 == 0 or b_idx == total_batches:
+            print(f"[{model_name}] Evaluated batch {b_idx}/{total_batches}", flush=True)
         
     # Calculate performance metrics
     all_targets = np.array(all_targets)
@@ -87,10 +90,10 @@ def evaluate_model(
     auc = roc_auc_score(all_targets, all_probs)
     avg_latency_ms = np.mean(latencies)
     
-    logger.info(f"[{model_name.upper()} RESULTS]")
-    logger.info(f"Accuracy: {acc:.4f} | F1-Score: {f1:.4f} | Precision: {precision:.4f} | Recall: {recall:.4f} | ROC-AUC: {auc:.4f}")
-    logger.info(f"Average Inference Latency: {avg_latency_ms:.2f} ms/image")
-    print(classification_report(all_targets, all_preds, target_names=["Negative (No Crack)", "Positive (Crack)"]))
+    print(f"\n[{model_name.upper()} RESULTS]", flush=True)
+    print(f"Accuracy: {acc:.4f} | F1-Score: {f1:.4f} | Precision: {precision:.4f} | Recall: {recall:.4f} | ROC-AUC: {auc:.4f}", flush=True)
+    print(f"Average Inference Latency: {avg_latency_ms:.2f} ms/image", flush=True)
+    print(classification_report(all_targets, all_preds, target_names=["Negative (No Crack)", "Positive (Crack)"]), flush=True)
     
     # Create evaluation metrics reports
     metrics = {

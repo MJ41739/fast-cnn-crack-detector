@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+kaggle_dataset.zip
+kaggle_dataset/*
+kaggle_dataset1/*
+
 # C extensions
 *.so
 

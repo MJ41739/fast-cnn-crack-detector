@@ -11,7 +11,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from sklearn.model_selection import train_test_split
-from backend.config import settings
+from backend.config import settings, BASE_DIR
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -70,26 +70,44 @@ class CrackDataset(Dataset):
 
 def get_data_splits() -> Tuple[List[str], List[str], List[str], List[int], List[int], List[int]]:
     """Scan dataset directories and partition into train, val, and test splits."""
-    positive_dir = os.path.join(settings.DATASET_DIR, "Positive")
-    negative_dir = os.path.join(settings.DATASET_DIR, "Negative")
+    candidate_dirs = [
+        settings.DATASET_DIR,
+        str(BASE_DIR / "kaggle_dataset1"),
+        str(BASE_DIR / "kaggle_dataset")
+    ]
     
-    if not os.path.exists(positive_dir) or not os.path.exists(negative_dir):
+    pos_files = []
+    neg_files = []
+    
+    seen_dirs = set()
+    for c_dir in candidate_dirs:
+        if not c_dir or c_dir in seen_dirs or not os.path.exists(c_dir):
+            continue
+        seen_dirs.add(c_dir)
+        
+        pos_sub = os.path.join(c_dir, "Positive")
+        neg_sub = os.path.join(c_dir, "Negative")
+        
+        if os.path.exists(pos_sub):
+            p_items = [os.path.join(pos_sub, f) for f in os.listdir(pos_sub) 
+                       if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))]
+            pos_files.extend(p_items)
+            
+        if os.path.exists(neg_sub):
+            n_items = [os.path.join(neg_sub, f) for f in os.listdir(neg_sub) 
+                       if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))]
+            neg_files.extend(n_items)
+            
+    if not pos_files or not neg_files:
         raise FileNotFoundError(
-            f"Dataset folders 'Positive' or 'Negative' not found in: {settings.DATASET_DIR}. "
+            f"Dataset folders 'Positive' or 'Negative' with images not found in candidates: {candidate_dirs}. "
             "Please check config or set DATASET_DIR correctly."
         )
 
-    # Gather positive images
-    pos_files = [os.path.join(positive_dir, f) for f in os.listdir(positive_dir) 
-                 if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))]
     pos_labels = [1] * len(pos_files)
-
-    # Gather negative images
-    neg_files = [os.path.join(negative_dir, f) for f in os.listdir(negative_dir) 
-                 if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))]
     neg_labels = [0] * len(neg_files)
     
-    logger.info(f"Dataset found: {len(pos_files)} Positive images, {len(neg_files)} Negative images.")
+    logger.info(f"Dataset found across candidates: {len(pos_files)} Positive images, {len(neg_files)} Negative images.")
 
     # Combine datasets
     all_files = pos_files + neg_files
